@@ -1,0 +1,247 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Computer Vision Experiment Schema",
+  "description": "Schema for documenting experiments in a facial age estimation and gender classification project",
+  "type": "object",
+  "required": [
+    "experiment_id",
+    "description",
+    "date",
+    "objective",
+    "dataset",
+    "preprocessing",
+    "model",
+    "training",
+    "evaluation",
+    "results"
+  ],
+  "properties": {
+    "experiment_id": {
+      "type": "string",
+      "description": "Unique identifier for the experiment"
+    },
+
+    "description": {
+      "type": "string",
+      "description": "Short summary of the experiment"
+    },
+
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the experiment was conducted"
+    },
+
+    "objective": {
+      "type": "string",
+      "description": "Research objective or goal of the experiment"
+    },
+
+    "hypothesis": {
+      "type": "string",
+      "description": "Optional hypothesis or research question"
+    },
+
+    "dataset": {
+      "type": "object",
+      "required": ["name", "split"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["UTKFace", "Adience", "Custom"]
+        },
+        "split": {
+          "type": "object",
+          "required": ["train", "validation", "test"],
+          "properties": {
+            "train": { "type": "number" },
+            "validation": { "type": "number" },
+            "test": { "type": "number" }
+          }
+        },
+        "label_type": {
+          "type": "object",
+          "properties": {
+            "age": {
+              "type": "string",
+              "enum": ["regression", "age_group"]
+            },
+            "gender": {
+              "type": "string",
+              "enum": ["binary"]
+            }
+          }
+        }
+      }
+    },
+
+    "preprocessing": {
+      "type": "object",
+      "required": ["face_detection", "image_size", "normalization"],
+      "properties": {
+        "face_detection": {
+          "type": "string",
+          "enum": ["opencv_haar", "mtcnn", "retinaface", "none"]
+        },
+        "face_alignment": {
+          "type": "boolean"
+        },
+        "image_size": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "normalization": {
+          "type": "string",
+          "enum": ["imagenet", "minmax", "standard", "none"]
+        },
+        "augmentation": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "horizontal_flip",
+              "rotation",
+              "brightness",
+              "contrast",
+              "none"
+            ]
+          }
+        }
+      }
+    },
+
+    "model": {
+      "type": "object",
+      "required": ["architecture", "learning_type"],
+      "properties": {
+        "architecture": {
+          "type": "string",
+          "description": "Backbone or base model architecture"
+        },
+        "learning_type": {
+          "type": "string",
+          "enum": ["single_task", "multi_task"]
+        },
+        "age_output": {
+          "type": "string",
+          "enum": ["regression", "age_group"]
+        },
+        "gender_output": {
+          "type": "string",
+          "enum": ["binary_classification"]
+        },
+        "output_heads": {
+          "type": "integer",
+          "description": "Number of output heads in the model"
+        }
+      }
+    },
+
+    "training": {
+      "type": "object",
+      "required": ["optimizer", "learning_rate", "batch_size", "epochs"],
+      "properties": {
+        "optimizer": {
+          "type": "string",
+          "enum": ["Adam", "SGD", "RMSprop"]
+        },
+        "learning_rate": {
+          "type": "number"
+        },
+        "batch_size": {
+          "type": "integer"
+        },
+        "epochs": {
+          "type": "integer"
+        },
+        "loss_functions": {
+          "type": "object",
+          "properties": {
+            "age": {
+              "type": "string",
+              "enum": ["MAE", "MSE", "Huber"]
+            },
+            "gender": {
+              "type": "string",
+              "enum": ["BinaryCrossEntropy"]
+            }
+          }
+        },
+        "loss_weights": {
+          "type": "object",
+          "properties": {
+            "age": { "type": "number" },
+            "gender": { "type": "number" }
+          }
+        },
+        "regularization": {
+          "type": "object",
+          "properties": {
+            "dropout": { "type": "number" },
+            "weight_decay": { "type": "number" }
+          }
+        },
+        "random_seed": {
+          "type": "integer"
+        }
+      }
+    },
+
+    "evaluation": {
+      "type": "object",
+      "required": ["metrics"],
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "accuracy",
+              "mae",
+              "confusion_matrix",
+              "precision",
+              "recall"
+            ]
+          }
+        },
+        "evaluation_protocol": {
+          "type": "string",
+          "description": "Description of how evaluation was performed"
+        }
+      }
+    },
+
+    "results": {
+      "type": "object",
+      "properties": {
+        "gender_accuracy": {
+          "type": "number"
+        },
+        "age_mae": {
+          "type": "number"
+        },
+        "additional_metrics": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "notes": {
+      "type": "string",
+      "description": "Additional observations or comments"
+    },
+
+    "references": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
