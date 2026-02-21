@@ -13,17 +13,17 @@ This checklist translates the project objectives, methodology, evaluation plan, 
 ---
 
 ## 2. Data Preparation
-- [ ] Download and verify UTKFace dataset structure and labels.
-- [ ] Implement or validate data loaders for UTKFace.
+- [x] Download and verify UTKFace dataset structure and labels.
+- [x] Implement or validate data loaders for UTKFace.
 - [ ] Implement face detection/cropping for datasets that require it (or document that UTKFace is pre-cropped).
-- [ ] Implement image resizing to the target resolution.
-- [ ] Implement normalization (e.g., ImageNet mean/std).
-- [ ] Implement data augmentation:
-  - [ ] Horizontal flip
-  - [ ] Random brightness/contrast
-  - [ ] Mild rotation (±10°)
-  - [ ] Light random crop/zoom
-- [ ] Validate preprocessing outputs with a small sample visualization.
+- [x] Implement image resizing to the target resolution.
+- [x] Implement normalization (e.g., ImageNet mean/std).
+- [x] Implement data augmentation:
+  - [x] Horizontal flip
+  - [x] Random brightness/contrast
+  - [x] Mild rotation (±10°)
+  - [x] Light random crop/zoom
+- [x] Validate preprocessing outputs with a small sample visualization.
 
 ---
 
