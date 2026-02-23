@@ -4,3 +4,49 @@ __pycache__/
 *.pt
 *.pth
 .ipynb_checkpoints/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+# Distribution / packaging
+Python
+build/
+dist/
+*.egg-info/
+eggs/
+MANIFEST
+# Virtual environments
+env
+venv
+venv312
+venv-1
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+# Unit test / coverage reports
+htmlcov/
+tox/
+nox/
+coverage
+pytest_cache/
+# Django/Flask/Database
+*.log
+db.sqlite3
+instance/
+# Jupyter Notebook
+ipynb_checkpoints
+# IDE settings
+spyderproject
+spyproject
+ropeproject
+# Type checker caches
+mypy_cache/
+pytype/
+pyre/
+# Ruff linter cache
+ruff_cache/
+# Streamlit secrets
+streamlit/secrets.toml
