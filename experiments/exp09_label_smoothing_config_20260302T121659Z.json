@@ -1,0 +1,30 @@
+{
+  "experiment_id": "exp09_label_smoothing",
+  "description": "Label smoothing to reduce overconfidence",
+  "model_architecture": "MobileNetV2",
+  "pretrained_backbone": true,
+  "freeze_backbone": false,
+  "dropout_rate": 0.2,
+  "learning_rate": 0.0001,
+  "batch_size": 32,
+  "num_epochs": 50,
+  "optimizer": "Adam",
+  "age_loss_weight": 1.0,
+  "gender_loss_weight": 1.0,
+  "image_size": [
+    224,
+    224
+  ],
+  "train_split": 0.7,
+  "val_split": 0.15,
+  "test_split": 0.15,
+  "augmentation": "full",
+  "random_seed": 42,
+  "data_dir": "dataset/raw/UTKFace",
+  "metadata_path": "dataset/processed/utkface_metadata.csv",
+  "checkpoint_dir": "models",
+  "experiment_dir": "experiments",
+  "device": "cuda",
+  "save_best_only": true,
+  "early_stopping_patience": null
+}
