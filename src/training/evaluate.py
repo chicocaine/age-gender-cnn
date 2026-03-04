@@ -2,13 +2,14 @@
 Model evaluation on test sets.
 
 Provides comprehensive evaluation with metrics computation.
+Includes both UTKFace (continuous age) and Adience (age-bin) evaluation.
 """
 
 import torch
 from torch.utils.data import DataLoader
 import numpy as np
 from tqdm import tqdm
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 
 def evaluate_model(
@@ -83,3 +84,66 @@ def evaluate_model(
         print(f"  Gender Accuracy: {gender_accuracy:.4f} ({gender_accuracy*100:.2f}%)")
     
     return age_preds, gender_preds, age_targets, gender_targets, metrics
+
+
+def evaluate_adience(
+    model: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    verbose: bool = True
+) -> Tuple[np.ndarray, np.ndarray, List[str], np.ndarray]:
+    """Evaluate model on the Adience cross-dataset benchmark.
+
+    The Adience dataloader yields ``(image, age_bin_str, gender_int)`` rather
+    than continuous age targets, so this function returns the raw predicted
+    continuous ages alongside the ground-truth bin labels.  All bin-level
+    metrics (within-range accuracy, ±1-bin tolerance, per-bin breakdown) are
+    computed in the notebook for full transparency.
+
+    Args:
+        model:      Trained AgeGenderModel in eval mode.
+        dataloader: AdienceDataset DataLoader using ``adience_collate_fn``.
+        device:     Torch device (CPU or CUDA).
+        verbose:    Show tqdm progress bar and summary statistics.
+
+    Returns:
+        Tuple of:
+            age_preds    – continuous predicted ages (N,)
+            gender_preds – raw sigmoid outputs (N,)
+            true_bins    – ground-truth Adience bin label strings, length N
+            true_genders – ground-truth gender integers 0/1 (N,)
+    """
+    model.eval()
+
+    age_preds_list:    list = []
+    gender_preds_list: list = []
+    true_bins_list:    List[str] = []
+    true_genders_list: list = []
+
+    pbar = tqdm(dataloader, desc="Evaluating Adience") if verbose else dataloader
+
+    with torch.no_grad():
+        for batch in pbar:
+            if batch is None:
+                continue
+            images, age_bins, genders = batch
+            images = images.to(device)
+
+            age_pred, gender_pred = model(images)
+
+            age_preds_list.append(age_pred.cpu().numpy())
+            gender_preds_list.append(gender_pred.cpu().numpy())
+            true_bins_list.extend(age_bins)
+            true_genders_list.append(genders.numpy())
+
+    age_preds    = np.concatenate(age_preds_list,    axis=0).squeeze()
+    gender_preds = np.concatenate(gender_preds_list, axis=0).squeeze()
+    true_genders = np.concatenate(true_genders_list, axis=0).squeeze()
+
+    if verbose:
+        gender_acc = np.mean((gender_preds > 0.5).astype(int) == true_genders)
+        print(f"\nAdience Evaluation — {len(age_preds)} samples")
+        print(f"  Mean predicted age : {age_preds.mean():.1f} years")
+        print(f"  Gender accuracy    : {gender_acc:.4f} ({gender_acc*100:.2f}%)")
+
+    return age_preds, gender_preds, true_bins_list, true_genders

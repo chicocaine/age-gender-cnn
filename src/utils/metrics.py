@@ -9,6 +9,23 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, accuracy_score, mean_absolute_error
 from typing import Dict, List, Tuple
 
+# Ordered list of Adience age bins (index position used for tolerance metric)
+ADIENCE_BIN_ORDER: List[str] = [
+    '0-2', '4-6', '8-13', '15-20', '25-32', '38-43', '48-53', '60+'
+]
+
+# Strict numeric boundaries for each Adience bin
+ADIENCE_BIN_RANGES: Dict[str, Tuple[float, float]] = {
+    '0-2':   (0,  2),
+    '4-6':   (4,  6),
+    '8-13':  (8,  13),
+    '15-20': (15, 20),
+    '25-32': (25, 32),
+    '38-43': (38, 43),
+    '48-53': (48, 53),
+    '60+':   (60, float('inf')),
+}
+
 
 def calculate_age_mae(predictions: np.ndarray, targets: np.ndarray) -> float:
     """Calculate Mean Absolute Error for age predictions.
@@ -203,3 +220,59 @@ def calculate_metrics_by_gender(
         }
     
     return results
+
+
+def calculate_within_range_accuracy(
+    pred_ages: np.ndarray,
+    true_bin_labels: List[str]
+) -> float:
+    """Check whether each predicted continuous age falls inside the strict
+    numeric range of the corresponding ground-truth Adience bin.
+
+    This is the primary Adience accuracy metric because it avoids penalising
+    predictions for label-boundary artefacts (e.g. predicting 24 when the
+    true bin is '25-32' is counted correct because 24 is adjacent; the strict
+    range check rewards predictions that land inside the actual bin window).
+
+    Args:
+        pred_ages: Continuous age predictions from the model (N,).
+        true_bin_labels: Ground-truth Adience bin strings, length N.
+
+    Returns:
+        Fraction of samples where pred_age is within the bin's [low, high].
+    """
+    correct = 0
+    for pred, label in zip(pred_ages, true_bin_labels):
+        low, high = ADIENCE_BIN_RANGES[label]
+        if low <= pred <= high:
+            correct += 1
+    return correct / len(true_bin_labels) if true_bin_labels else 0.0
+
+
+def calculate_bin_tolerance_accuracy(
+    predicted_bins: List[str],
+    target_bins: List[str],
+    tolerance: int = 1
+) -> float:
+    """Calculate age-bin accuracy allowing ±tolerance adjacent bins.
+
+    Adience bins have gaps (e.g. ages 3, 7, 21-24 fall between bins), so a
+    predicted bin that is one position away from the true bin is semantically
+    much closer than a prediction several bins away. This metric counts a
+    prediction as correct if its index in ADIENCE_BIN_ORDER differs from the
+    true bin's index by at most `tolerance`.
+
+    Args:
+        predicted_bins: Predicted Adience bin strings, length N.
+        target_bins: Ground-truth Adience bin strings, length N.
+        tolerance: Maximum allowed index distance (default 1 = ±1 bin).
+
+    Returns:
+        Fraction of samples within tolerance.
+    """
+    bin_index = {b: i for i, b in enumerate(ADIENCE_BIN_ORDER)}
+    correct = sum(
+        abs(bin_index.get(p, -99) - bin_index.get(t, -99)) <= tolerance
+        for p, t in zip(predicted_bins, target_bins)
+    )
+    return correct / len(target_bins) if target_bins else 0.0
