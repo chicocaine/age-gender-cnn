@@ -23,6 +23,7 @@ venv312
 venv-1
 env/
 venv/
+.venv-1/
 ENV/
 env.bak/
 venv.bak/
